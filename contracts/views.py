@@ -19,7 +19,7 @@ class ContractViewSet(viewsets.ModelViewSet):
         ).update(status='EXPIRED')
 
         user = self.request.user
-        if user.role in ['ADMIN', 'LAWYER']:
+        if user.role in ['ADMIN', 'LAWYER'] or user.is_superuser:
             queryset = Contract.objects.all()
         else:
             queryset= Contract.objects.filter(parties=user)
@@ -35,7 +35,11 @@ class ContractViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        if self.request.user.is_authenticated:
+            serializer.save(created_by=self.request.user)
+        else:
+            from rest_framework.exceptions import NotAuthenticated
+            raise NotAuthenticated("لازم تكون مسجل دخول لتعمل هاد الإجراء")
     
     @action(detail=True,methods = 'POST')
     def uplode(self,request,pk=None):
