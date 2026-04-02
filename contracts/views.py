@@ -2,10 +2,10 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from .seralizers import ContractSerializer,UplodeFiles
 from .models import Contract
-from ..accounts.permissions import IsAdminOrLawyer
+from accounts.permissions import IsAdminOrLawyer
 from django.utils import timezone
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 class ContractViewSet(viewsets.ModelViewSet):
     permission_classes=[IsAdminOrLawyer]
@@ -20,17 +20,30 @@ class ContractViewSet(viewsets.ModelViewSet):
 
         user = self.request.user
         if user.role in ['ADMIN', 'LAWYER']:
-            return Contract.objects.all()
-        return Contract.objects.filter(parties=user)
+            queryset = Contract.objects.all()
+        else:
+            queryset= Contract.objects.filter(parties=user)
         
+        status_para = self.request.query_params.get('status')
+        if status_para: 
+            queryset = queryset.filter(status=status_para)
+        
+        deadline_before = self.request.query_params.get('deadline_before')
+        if deadline_before:
+            queryset = queryset.filter(deadline_before__lte=deadline_before)
+
+        return queryset
+    
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+    
+    @action(detail=True,methods = 'POST')
+    def uplode(self,request,pk=None):
+        contract = self.get_object()
+        seralizer = UplodeFiles(contract,data = request.data)
+        if seralizer.is_valid():
+            seralizer.save()
+            return Response({'status': 'File uploaded successfully'})
+        else:
+            return Response(seralizer.errors,status=400)
 
-
-class UplodeView(APIView):
-    def post(self,request):
-        serializer = UplodeFiles(data = request.data)
-        if (serializer.is_valid(raise_exception=True)):
-            return Response('Uplode Successfully', status=201)
-        return Response('the file not allowed')
-        
