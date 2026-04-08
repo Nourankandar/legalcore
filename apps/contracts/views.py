@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from .seralizers import ContractSerializer,UplodeFiles
 from .models import Contract
-from accounts.permissions import IsAdminOrLawyer
+from apps.accounts.permissions import IsAdminOrLawyer
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.decorators import action
