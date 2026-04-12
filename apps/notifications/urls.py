@@ -7,4 +7,5 @@ router.register('Notification', NotificationViewSet, basename='notification')
 
 urlpatterns = [
     path('', include(router.urls)),
+    # path('trigger-check/', TriggerContractCheckView.as_view()),
 ]

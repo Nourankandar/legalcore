@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions
+from rest_framework.views import APIView
 from apps.notifications.models import Notification
 from apps.notifications.serializers import NotificationSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from apps.notifications.tasks import check_upcoming_deadlines
 
 class NotificationViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'patch', 'head', 'options']
@@ -23,3 +25,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Notification marked as read'})
     
     
+
+# class TriggerContractCheckView(APIView):
+#     def post(self, request):
+#         check_upcoming_deadlines.delay()
+#         return Response({"status": "Task triggered successfully!"})
