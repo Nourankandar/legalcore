@@ -8,10 +8,10 @@ class ContractSerializer(serializers.ModelSerializer):
     role = serializers.ReadOnlyField(source='created_by.role')
     class Meta:
         model=Contract
-        fields = ['id', 'username', 'email', 'role', 'title', 'description', 
-            'status', 'deadline', 'document', 'created_at', 'parties']
-        read_only_fields=['created_at']
-        
+        fields = ['id', 'username','arabic_title', 'email', 'role', 'title', 'description', 
+            'status', 'deadline', 'document', 'created_at','created_by', 'parties']
+        read_only_fields=['created_at','created_by']
+     
 
 class UplodeFiles(serializers.ModelSerializer):
     class Meta:

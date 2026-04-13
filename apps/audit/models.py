@@ -11,15 +11,19 @@ class AuditLog(models.Model):
     user =  models.ForeignKey(
         AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
+        null=True, 
+        blank=True,
         related_name='audit_logs'
         )
     contract = models.ForeignKey(
         Contract, 
         on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
         related_name='audit_logs'
         )
     action = models.CharField(max_length=20, choices=choises)
-    extra_Data = models.JSONField(blank=True, null=True)
+    extra_data = models.JSONField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

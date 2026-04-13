@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 
 class ContractViewSet(viewsets.ModelViewSet):
     permission_classes=[IsAdminOrLawyer]
-    queryset = Contract.objects.all()
+    queryset = Contract.objects.filter(deleted_at__isnull=True)
     serializer_class = ContractSerializer
 
     def get_queryset(self):
@@ -20,7 +20,7 @@ class ContractViewSet(viewsets.ModelViewSet):
 
         user = self.request.user
         if user.role in ['ADMIN', 'LAWYER'] or user.is_superuser:
-            queryset = Contract.objects.all()
+            queryset = Contract.objects.filter(deleted_at__isnull=True)
         else:
             queryset= Contract.objects.filter(parties=user)
         
@@ -35,17 +35,15 @@ class ContractViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        if self.request.user.is_authenticated:
-            serializer.save(created_by=self.request.user, _current_user=self.request.user)
-        else:
-            from rest_framework.exceptions import NotAuthenticated
-            raise NotAuthenticated("you have to be authenticated to create a contract")
+        serializer.save(created_by=self.request.user)
+        
     def perform_update(self, serializer):
-        serializer.save(_current_user=self.request.user)
+        serializer.save(created_by=self.request.user)
 
     def perform_destroy(self, instance):
-        instance._current_user = self.request.user
-        instance.delete()
+        instance.created_by = self.request.user
+        instance.deleted_at = timezone.now()
+        instance.save()
     
     @action(detail=True,methods = ['POST'])
     def uplode(self,request,pk=None):

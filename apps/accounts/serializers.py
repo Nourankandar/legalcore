@@ -35,7 +35,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=data['username'],
             email=data['email'],
             password=data['password'],
-            role=User.CLIENT  
+            role=User.CLIENT ,
+            is_active=True
         )
         return user
     

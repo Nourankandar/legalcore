@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import UserSerializer,RegisterSerializer
-
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .throttles import LoginRateThrottle
 
 class RegisterView(APIView):
     def post(self,request):
@@ -12,6 +13,8 @@ class RegisterView(APIView):
         user = serializer.save()
         return Response(UserSerializer(user).data, status=201)
 
+class LoginView(TokenObtainPairView):
+    throttle_classes = [LoginRateThrottle]
 
 class MyProfileView(APIView):
     permission_classes =[IsAuthenticated]
