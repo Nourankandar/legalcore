@@ -30,18 +30,24 @@ class ContractViewSet(viewsets.ModelViewSet):
         
         deadline_before = self.request.query_params.get('deadline_before')
         if deadline_before:
-            queryset = queryset.filter(deadline_before__lte=deadline_before)
+            queryset = queryset.filter(deadline__lte=deadline_before)
 
         return queryset
     
     def perform_create(self, serializer):
         if self.request.user.is_authenticated:
-            serializer.save(created_by=self.request.user)
+            serializer.save(created_by=self.request.user, _current_user=self.request.user)
         else:
             from rest_framework.exceptions import NotAuthenticated
-            raise NotAuthenticated("لازم تكون مسجل دخول لتعمل هاد الإجراء")
+            raise NotAuthenticated("you have to be authenticated to create a contract")
+    def perform_update(self, serializer):
+        serializer.save(_current_user=self.request.user)
+
+    def perform_destroy(self, instance):
+        instance._current_user = self.request.user
+        instance.delete()
     
-    @action(detail=True,methods = 'POST')
+    @action(detail=True,methods = ['POST'])
     def uplode(self,request,pk=None):
         contract = self.get_object()
         seralizer = UplodeFiles(contract,data = request.data)
